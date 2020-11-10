@@ -248,7 +248,7 @@ class ArtificialNeuralNetwork:
         """
         if self.loss == 'mse': J = self.mse(X, Y)
         elif self.loss == 'bce': J = self.bce(X, Y)
-        elif self.loss == 'ce': J = self.ce(X, Y)
+        else: J = self.ce(X, Y)
         grads = self.backward_propagation(X, Y)
         grads_W = [g_ for i, g in enumerate(grads[0]) if i != 0 for g_ in g.flatten()]
         grads_b = [b_ for j, b in enumerate(grads[1]) if j != 0 for b_ in b.flatten()]
