@@ -84,13 +84,14 @@ def linear(z, is_grad=False):
   """
   return 1 if is_grad else z
 
-def softmax(z: np.ndarray) -> np.ndarray:
+def softmax(z: np.ndarray, *args) -> np.ndarray:
   """
   ## Softmax activation function
   
   ### Arguments:
   
   - z: {ndarray or number} value to be evaluated through the softmax activation function
+  - args: just to serve as carry out for easier implementation on models
   
   Return:
   
