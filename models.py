@@ -53,104 +53,6 @@ class ArtificialNeuralNetwork:
     self.b.append(np.zeros((self.layers_sizes[-1], 1)))
     self.act_funcs.append(activation_function)
     self.keep_probs.append(keep_prob)
-
-  def sigmoid(self, z: np.ndarray, is_grad: bool=False) -> np.ndarray:
-    """
-    ## SIGMOID ACTIVATION FUNCTION
-
-    ### Arguments:
-    
-    - z: {np.ndarray or number} value to be evaluated through the sigmoid activation function
-    - is_grad: {bool} boolean value which defines if the value to returned is the derivative or not of the evaluation of the sigmoid function
-    
-    ### Return:
-    
-    - Evaluated sigmoid function, it depends if is the derivative evaluation on the is_grad variable
-    """
-    if is_grad:
-      s = self.sigmoid(z, False)
-      return s * (1 - s)
-    else:
-      return 1 / (1 + np.exp(-z))
-
-  def tanh(self, z, is_grad=False):
-    """
-    ## HYPERBOLIC TANGENT ACTIVATION FUNCTION
-    
-    ### Arguments:
-    
-    - z: {np.ndarray or number} value to be evaluated through the tanh activation function
-    - is_grad: {bool} boolean value which defines if the value to returned is the derivative or not of the evaluation of the tanh function
-    
-    ### Return:
-    
-    - Evaluated tanh function, it depends if is the derivative evaluation on the is-grad variable
-    """
-    if is_grad:
-      t = self.tanh(z, False)
-      return 1 - (t ** 2)
-    else:
-      return np.tanh(z)
-  
-  def relu(self, z, is_grad=False):
-    """
-    ## RECTIFIED LINEAR UNIT ACTIVATION FUNCTION
-    
-    ### Arguments:
-    
-    - z: {np.ndarray or number} value to be evaluated through the relu activation function
-    - is_grad: {bool} boolean value which defines if the value to returned is the derivative or not of the evaluation of the relu function
-    
-    ### Return:
-    
-    - Evaluated relu function, it depends if is the derivative evaluation on the is-grad variable
-    """
-    return np.where(z < 0, 0, 1) if is_grad else np.maximum(0, z)
-
-  def leaky_relu(self, z, is_grad=False):
-    """
-    ## LEAKY RECTIFIED LINEAR UNIT ACTIVATION FUNCTION
-    
-    ### Arguments:
-    
-    - z: {np.ndarray or number} value to be evaluated through the leaky relu activation function
-    - is_grad: {bool} boolean value which defines if the value to returned is the derivative or not of the evaluation of the leaky relu function
-    
-    ### Return:
-    
-    - Evaluated leaky relu function, it depends if is the derivative evaluation on the is-grad variable
-    """
-    return np.where(z < 0, 0.01, 1) if is_grad else np.maximum(0.01 * z, z)
-  
-  def linear(self, z, is_grad=False):
-    """
-    ## LINEAR UNIT ACTIVATION FUNCTION
-    
-    ### Arguments:
-    
-    - z: {np.ndarray or number} value to be evaluated through the linear activation function
-    - is_grad: {bool} boolean value which defines if the value to returned is the derivative or not of the evaluation of the linear function
-    
-    ### Return:
-    
-    - Evaluated linear function, it depends if is the derivative evaluation on the is-grad variable
-    """
-    return 1 if is_grad else z
-  
-  def softmax(self, z: np.ndarray) -> np.ndarray:
-    """
-    ## SOFTMAX ACTIVATION FUNCTION
-    
-    ### Arguments:
-    
-    - z: {ndarray or number} value to be evaluated through the softmax activation function
-    
-    Return:
-    
-    - Evaluated softmax function
-    """
-    t = np.exp(z)
-    return t / np.sum(t)
   
   def activation_function(self, z: np.ndarray, is_grad: bool, act_func: str):
     """
@@ -181,55 +83,6 @@ class ArtificialNeuralNetwork:
     elif act_func == 'linear': return self.linear(z, is_grad)
     elif act_func == 'softmax': return self.softmax(z)
     else: return 'Error'
-
-  def mse(self, X: np.ndarray, Y: np.ndarray):
-    """
-    ## MEAN SQUARED ERROR LOSS FUNCTION
-
-    ### Arguments:
-    
-    - X: {np.ndarray} input values of the examples
-    - Y: {np.ndarray} output values of the examples
-    
-    ### Return:
-    
-    - Evaluated mean squared error loss function in all the examples between the predicted value given by the variable X and the variable Y
-    """
-    A, _ = self.forward_propagation(X)
-    dif_Y = A[-1] - Y
-    return (dif_Y @ dif_Y.T).squeeze().squeeze()/X.shape[1]
-  
-  def bce(self, X: np.ndarray, Y: np.ndarray):
-    """
-    ## BINARY CROSS ENTROPY LOSS FUNCTION
-
-    ### Arguments:
-    
-    - X: {np.ndarray} input values of the examples
-    - Y => output values of the examples
-    
-    ### Return:
-
-    - Evaluated log-like loss function in all the examples for binary class discrete models between the predicted value given by the variable X and the variable Y
-    """
-    A, _ = self.forward_propagation(X)
-    return -(Y @ np.log(A[-1]).T + (1 - Y) @ np.log(1 - A[-1]).T).squeeze().squeeze()/X.shape[1]
-  
-  def ce(self, X, Y):
-    """
-    ## CROSS ENTROPY LOSS FUNCTION
-
-    ### Arguments:
-    
-    - X => input values of the examples
-    - Y => output values of the examples
-    
-    ### Return:
-
-    - Evaluated log-like loss function in all the examples between for multi class discrete models the predicted value given by the variable X and the variable Y
-    """
-    A, _ = self.forward_propagation(X)
-    return -np.sum(np.log(A[-1]) @ Y.T)/X.shape[1]
   
   def forward_propagation(self, X: np.ndarray):
       """
@@ -303,6 +156,7 @@ class ArtificialNeuralNetwork:
     
     - This last two are return together as a tuple
     """
+    A, _ = self.forward_propagation(X)
     if self.loss == 'mse': J = self.mse(X, Y)
     elif self.loss == 'bce': J = self.bce(X, Y)
     else: J = self.ce(X, Y)
