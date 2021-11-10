@@ -1,5 +1,7 @@
 import numpy as np
+import matplotlib.pyplot as plt
 from utils import progress_bar
+
 
 def Gradient_Descent(X, y, model, epochs, batch_size, alpha_0=1e-2, learning_decay_rate_type=None, discrete_reduction=0.001, decay_rate=1, k=1, metrics=[], show=False):
   """
@@ -13,17 +15,17 @@ def Gradient_Descent(X, y, model, epochs, batch_size, alpha_0=1e-2, learning_dec
   - Y: {Array-like} with the output values of the examples.
   - model: {Model} Object model of the neural network which parameters wants to be optimized.
   - epochs: {int} value that defines iterations desired to run the algorithm through all the batches.
-  - batch-size: {int} value that defines batch size in which the examples will be divide to pass through the algorithm.
-  - alpha-0: {float} value that defines the initial value of the learning rate.
-  - learning-decay-rate-type: {str} value that chooses the type of decay rate desired for the algorithm, this can be:
-    1. 'inverse-radical'
+  - batch_size: {int} value that defines batch size in which the examples will be divide to pass through the algorithm.
+  - alpha_0: {float} value that defines the initial value of the learning rate.
+  - learning_decay_rate_type: {str} value that chooses the type of decay rate desired for the algorithm, this can be:
+    1. 'inverse_radical'
     2. 'exponential'
     3. 'inverse'
     4. 'discrete'
     5. if pass any diferent value default alpha-0 set as the learning rate
-  - discrete-reduction: {float} If learning-decay-rate-type is chose to be 'discrete', float value to reduce the value of the learning rate at the beginning of each epoch.
-  - decay-rate: {float} If learning-decay-rate-type is chose to be 'inverse', float value that defines the decay rate that redices the learning rate each epoch.
-  - k: {float} If learning-decay-rate-type is chose to be 'inverse-radical', float value that defines inversely how fast radicaly the learning decays in each epoch.
+  - discrete_reduction: {float} If learning-decay-rate-type is chose to be 'discrete', float value to reduce the value of the learning rate at the beginning of each epoch.
+  - decay_rate: {float} If learning-decay-rate-type is chose to be 'inverse', float value that defines the decay rate that redices the learning rate each epoch.
+  - k: {float} If learning-decay-rate-type is chose to be 'inverse_radical', float value that defines inversely how fast radicaly the learning decays in each epoch.
   - metrics: {str[]} List of strings that define the metrics that wants to be tracked through the optimization algorithm, for now it can only be 'loss' or 'acc'
   - show: {bool} Defines if the metrics and loading bar for the batches are shown in screen
   
@@ -56,13 +58,17 @@ def Gradient_Descent(X, y, model, epochs, batch_size, alpha_0=1e-2, learning_dec
       alpha = alpha_0
     
     for t in range(X.shape[1] // batch_size):
-      X_batch, y_batch = X[:, t*batch_size:(t+1)*batch_size], y[:, t*batch_size:(t+1)*batch_size]
+      start = t * batch_size
+      end = (t + 1) * batch_size
+      X_batch, y_batch = X[:, start : end], y[:, start : end]
       
       J, grads = model.cost_function(X_batch, y_batch)
       
       dW, dB = grads
       
       W, B = model.get_parameters()
+      # print('W', W)
+      # print('B', B)
       W, B = W - alpha * dW, B - alpha * dB
       
       model.set_parameters(W, B)
@@ -78,10 +84,11 @@ def Gradient_Descent(X, y, model, epochs, batch_size, alpha_0=1e-2, learning_dec
       J_history.append(J)
     
     if ('accuracy' in metrics or 'acc' in metrics) and show == True: 
-      if model.loss == 'bce' or model.loss == 'ce':
-        acc = np.mean(model.forward_propagation(X)[0][-1] == y)
-      else:
-        pass
+      # if model.loss == 'bce' or model.loss == 'ce':
+      #   acc = np.mean(model.forward_propagation(X)[0][-1] == y)
+      # else:
+      #   pass
+      acc = np.mean(model.forward_propagation(X)[0][-1] == y)
     
       print('Training accuracy:', acc, end='\t')
     
@@ -154,7 +161,7 @@ def Adam(X, y, model, epochs, batch_size, alpha_0=1e-2, learning_decay_rate_type
     S_dW, S_db = np.ones((np.sum([w.size for i, w in enumerate(model.W) if i != 0],))) * momentum, np.ones((np.sum([b.size for j, b in enumerate(model.b) if j != 0],))) * momentum
     
     for t in range(X.shape[1] // batch_size):
-      X_batch, y_batch = X[:, t*batch_size:(t+1)*batch_size], y[:, t*batch_size:(t+1)*batch_size]
+      X_batch, y_batch = X[:, t * batch_size:(t + 1) * batch_size], y[:, t * batch_size : (t + 1) * batch_size]
       
       J, grads = model.cost_function(X_batch, y_batch)
       
@@ -163,14 +170,14 @@ def Adam(X, y, model, epochs, batch_size, alpha_0=1e-2, learning_decay_rate_type
       V_dW, V_db = beta1 * V_dW + (1 - beta1) * dW, beta1 * V_db + (1 - beta1) * dB
       S_dW, S_db = beta2 * S_dW + (1 - beta2) * (dW ** 2), beta2 * S_db + (1 - beta2) * (dB ** 2)
       
-      V_dW_corrected, V_db_corrected = V_dW / (1 - (beta1 ** t)), V_db / (1 - (beta1 ** t))
-      S_dW_corrected, S_db_corrected = S_dW / (1 - (beta2 ** t)), S_db / (1 - (beta2 ** t))
+      V_dW_corrected, V_db_corrected = V_dW / (1 - (beta1 ** (t + 1))), V_db / (1 - (beta1 ** (t + 1)))
+      S_dW_corrected, S_db_corrected = S_dW / (1 - (beta2 ** (t + 1))), S_db / (1 - (beta2 ** (t + 1)))
       
       W, B = model.get_parameters()
       
-      # W, B = W - alpha * (V_dW_corrected/(np.sqrt(S_dW_corrected) + epsilon)), B - alpha * (V_db_corrected/(np.sqrt(S_db_corrected) + epsilon))
+      W, B = W - alpha * (V_dW_corrected/(np.sqrt(S_dW_corrected) + epsilon)), B - alpha * (V_db_corrected/(np.sqrt(S_db_corrected) + epsilon))
       
-      W, B = W - alpha * (V_dW/(np.sqrt(S_dW) + epsilon)), B - alpha * (V_db/(np.sqrt(S_db) + epsilon))
+      # W, B = W - alpha * (V_dW/(np.sqrt(S_dW) + epsilon)), B - alpha * (V_db/(np.sqrt(S_db) + epsilon))
       
       model.set_parameters(W, B)
       
@@ -185,10 +192,11 @@ def Adam(X, y, model, epochs, batch_size, alpha_0=1e-2, learning_decay_rate_type
       J_history.append(J)
     
     if ('accuracy' in metrics or 'acc' in metrics) and show == True: 
-      if model.loss == 'bce' or model.loss == 'ce':
-        acc = np.mean(model.forward_propagation(X)[0][-1] == y)
-      else:
-        pass
+      acc = np.mean(model.forward_propagation(X)[0][-1] == y)
+      # if model.loss == 'bce' or model.loss == 'ce':
+      #   acc = np.mean(model.forward_propagation(X)[0][-1] == y)
+      # else:
+      #   pass
       
       print('Training accuracy:', acc, end='\t')
       
