@@ -46,7 +46,9 @@ class ArtificialNeuralNetwork:
       1. Sigmoid (pass in: 'sigmoid')
       2. Hyperbolic Tangent (pass in: 'tanh')
       3. Rectified Linear Unit (pass in: 'relu')
-      4. LEAKY REctified Linear Unit (pass in: 'leaky_relu')
+      4. Leaky Rectified Linear Unit (pass in: 'leaky_relu')
+      4. Linear (pass in: 'linear')
+      4. Softmax (pass in: 'softmax')
     - keep_prob: {float} probability to keep different units of the layer, as form to apply dropout layer
     """
     self.layers_sizes.append(n_units)
@@ -113,6 +115,8 @@ class ArtificialNeuralNetwork:
       d = np.random.rand(a.shape[0], a.shape[1]) < self.keep_probs[i]
   
       A.append((a * d) / self.keep_probs[i])
+      # print(f'Layer {i}', (a * d) / self.keep_probs[i])
+    
     
     return A, Z
 
@@ -232,6 +236,9 @@ class ArtificialNeuralNetwork:
     params_b = [b for j, B in enumerate(self.b) if j != 0 for b in B.flatten()]
     
     return np.array(params_W), np.array(params_b)
+
+  def prediction(self, X: np.ndarray) -> np.ndarray:
+    return self.forward_propagation(X)[0][-1]
   
   def resume(self):
     """
